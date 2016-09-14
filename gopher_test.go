@@ -11,7 +11,7 @@ func hello(w gopher.ResponseWriter, r *gopher.Request) {
 	w.WriteInfo("Hello World!")
 }
 
-func ExampleGet() {
+func Example_client() {
 	res, err := gopher.Get("gopher://gopher.floodgap.com")
 	if err != nil {
 		log.Fatal(err)
@@ -19,13 +19,12 @@ func ExampleGet() {
 	fmt.Print(res.Dir.ToText())
 }
 
-func ExampleServer() {
+func Example_server() {
 	gopher.HandleFunc("/hello", hello)
 	log.Fatal(gopher.ListenAndServe("localhost:7000", nil))
 }
 
-func ExampleFileServer() {
+func Example_fileserver() {
 	gopher.Handle("/", gopher.FileServer(gopher.Dir("/tmp")))
-
 	log.Fatal(gopher.ListenAndServe("localhost:7000", nil))
 }
