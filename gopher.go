@@ -599,8 +599,6 @@ func (c *conn) serve(ctx context.Context) {
 	c.server.logf("serving %s", c.remoteAddr)
 
 	w, err := c.readRequest(ctx)
-	c.server.logf("w: %q", w)
-	c.server.logf("err: %q", err)
 
 	if err != nil {
 		if err == io.EOF {
