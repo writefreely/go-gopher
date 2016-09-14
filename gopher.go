@@ -938,6 +938,10 @@ func (w *response) Write(b []byte) (int, error) {
 }
 
 func (w *response) WriteError(err string) error {
+	if w.rt == 0 {
+		w.rt = 2
+	}
+
 	if w.rt != 2 {
 		_, e := w.w.Write([]byte(err))
 		return e
@@ -954,6 +958,10 @@ func (w *response) WriteError(err string) error {
 }
 
 func (w *response) WriteInfo(msg string) error {
+	if w.rt == 0 {
+		w.rt = 2
+	}
+
 	if w.rt != 2 {
 		_, e := w.w.Write([]byte(msg))
 		return e
