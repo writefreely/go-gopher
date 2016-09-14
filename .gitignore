@@ -1,0 +1,5 @@
+*~
+*.bak
+examples/hello/hello
+examples/client/client
+examples/fileserver/fileserver
