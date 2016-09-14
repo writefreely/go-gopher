@@ -1,3 +1,10 @@
+// gopher provides an implementation of the Gopher protocol (RFC 1436)
+//
+// Much of the API is similar in design to the net/http package of the
+// standard library. To build custom Gopher servers implement handler
+// functions or the `Handler{}` interface. Implementing a client is as
+// simple as calling `gopher.Get(uri)` and passing in a `uri` such as
+// `"gopher://gopher.floodgap.com/"`.
 package gopher
 
 import (
