@@ -54,6 +54,7 @@ const (
 	INFO  = ItemType('i') // Item is an informational message
 	HTML  = ItemType('h') // Item is a HTML document
 	AUDIO = ItemType('s') // Item is an Audio file
+	PNG   = ItemType('p') // Item is a PNG Image
 )
 
 const (
@@ -138,6 +139,8 @@ func (it ItemType) String() string {
 		return "HTML"
 	case AUDIO:
 		return "AUDIO"
+	case PNG:
+		return "PNG"
 	default:
 		return "UNKNOWN"
 	}
