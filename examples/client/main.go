@@ -35,7 +35,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		fmt.Print(contents)
+		fmt.Print(string(contents))
 	} else {
 		var (
 			bytes []byte
