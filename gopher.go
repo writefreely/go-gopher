@@ -368,9 +368,14 @@ func (i *Item) FetchDirectory() (Directory, error) {
 
 	var d Directory
 	for _, line := range lines {
+		if len(bytes.Trim(line, "\r\n")) == 0 {
+			continue
+		}
+
 		if len(line) == 1 && line[0] == END {
 			break
 		}
+
 		var i Item
 		err := i.parse(line)
 		if err != nil {
