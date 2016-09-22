@@ -106,43 +106,43 @@ func (it ItemType) MarshalJSON() ([]byte, error) {
 func (it ItemType) String() string {
 	switch it {
 	case FILE:
-		return "FILE"
+		return "TXT"
 	case DIRECTORY:
-		return "DIRECTORY"
+		return "DIR"
 	case PHONEBOOK:
-		return "PHONEBOOK"
+		return "PHO"
 	case ERROR:
-		return "ERROR"
+		return "ERR"
 	case BINHEX:
-		return "BINHEX"
+		return "HEX"
 	case DOSARCHIVE:
-		return "DOSARCHIVE"
+		return "ARC"
 	case UUENCODED:
-		return "UUENCODED"
+		return "UUE"
 	case INDEXSEARCH:
-		return "INDEXSEARCH"
+		return "QRY"
 	case TELNET:
-		return "TELNET"
+		return "TEL"
 	case BINARY:
-		return "BINARY"
+		return "BIN"
 	case REDUNDANT:
-		return "REDUNDANT"
+		return "DUP"
 	case TN3270:
-		return "TN3270"
+		return "TN3"
 	case GIF:
 		return "GIF"
 	case IMAGE:
-		return "IMAGE"
+		return "IMG"
 	case INFO:
-		return "INFO"
+		return "NFO"
 	case HTML:
-		return "HTML"
+		return "HTM"
 	case AUDIO:
-		return "AUDIO"
+		return "SND"
 	case PNG:
 		return "PNG"
 	default:
-		return "UNKNOWN"
+		return "???"
 	}
 }
 
