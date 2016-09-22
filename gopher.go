@@ -210,6 +210,17 @@ func (i *Item) parse(line []byte) error {
 	return nil
 }
 
+func (i *Item) isDirectoryLike() bool {
+	switch i.Type {
+	case DIRECTORY:
+		return true
+	case INDEXSEARCH:
+		return true
+	default:
+		return false
+	}
+}
+
 // Directory representes a Gopher Menu of Items
 type Directory []Item
 
@@ -290,22 +301,20 @@ func Get(uri string) (*Response, error) {
 	i := Item{Type: Type, Selector: Selector, Host: host, Port: port}
 	res := Response{Type: i.Type}
 
-	if i.Type == ItemType(DIRECTORY) {
+	if i.isDirectoryLike() {
 		d, err := i.FetchDirectory()
 		if err != nil {
 			return nil, err
 		}
 
 		res.Dir = d
-	} else if i.Type == ItemType(FILE) {
+	} else {
 		reader, err := i.FetchFile()
 		if err != nil {
 			return nil, err
 		}
 
 		res.Body = reader
-	} else {
-		return nil, fmt.Errorf("unsupported type: %s", i.Type)
 	}
 
 	return &res, nil
@@ -317,10 +326,6 @@ func Get(uri string) (*Response, error) {
 func (i *Item) FetchFile() (io.Reader, error) {
 	if i.Type == DIRECTORY {
 		return nil, errors.New("cannot fetch a directory as a file")
-	}
-
-	if i.Type != FILE {
-		return nil, errors.New("non-plaintext encodings not supported")
 	}
 
 	conn, err := net.Dial("tcp", i.Host+":"+strconv.Itoa(i.Port))
@@ -340,7 +345,7 @@ func (i *Item) FetchFile() (io.Reader, error) {
 // FetchDirectory fetches directory information, not data.
 // Calling this on an Item whose type is not DIRECTORY will return an error.
 func (i *Item) FetchDirectory() (Directory, error) {
-	if i.Type != DIRECTORY {
+	if !i.isDirectoryLike() {
 		return nil, errors.New("cannot fetch a file as a directory")
 	}
 
