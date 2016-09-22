@@ -810,9 +810,7 @@ func cleanPath(p string) string {
 // Most-specific (longest) pattern wins
 func (mux *ServeMux) match(selector string) (h Handler, pattern string) {
 	var n = 0
-	log.Printf("selector: %q", selector)
 	for k, v := range mux.m {
-		log.Printf("k: %q v: %q", k, v)
 		if !selectorMatch(k, selector) {
 			continue
 		}
@@ -843,7 +841,6 @@ func (mux *ServeMux) handler(selector string) (h Handler, pattern string) {
 	defer mux.mu.RUnlock()
 
 	h, pattern = mux.match(selector)
-	log.Printf("found handler %q with pattern %q", h, pattern)
 	if h == nil {
 		h, pattern = NotFoundHandler(), ""
 	}
@@ -991,13 +988,11 @@ func (w *response) WriteInfo(msg string) error {
 }
 
 func (w *response) WriteItem(i Item) error {
-	log.Printf("WriteItem: %q", i)
 	if w.rt == 0 {
 		w.rt = 2
 	}
 
 	if w.rt != 2 {
-		log.Printf("Ooops!")
 		return errors.New("cannot write directory data to a document")
 	}
 
@@ -1007,13 +1002,11 @@ func (w *response) WriteItem(i Item) error {
 	}
 
 	b, err := i.MarshalText()
-	log.Printf("b: %q err: %q", b, err)
 	if err != nil {
 		return err
 	}
 
-	n, err := w.w.Write(b)
-	log.Printf("n: %q err: %q", n, err)
+	_, err = w.w.Write(b)
 	if err != nil {
 		return err
 	}
@@ -1142,22 +1135,9 @@ type File interface {
 }
 
 func dirList(w ResponseWriter, r *Request, f File, fs FileSystem) {
-	log.Printf("dirList: %s", f)
 	root := fs.Name()
-	log.Printf("root: %q", root)
-
-	/*
-		fileinfo, err := f.Stat()
-		if err != nil {
-			// TODO: log err.Error() to the Server.ErrorLog, once it's possible
-			// for a handler to get at its Server via the ResponseWriter.
-			Error(w, "Error reading directory")
-			return
-		}
-	*/
 
 	fullpath := f.(*os.File).Name()
-	log.Printf("fullpath: %s", fullpath)
 
 	files, err := f.Readdir(-1)
 	if err != nil {
@@ -1168,10 +1148,7 @@ func dirList(w ResponseWriter, r *Request, f File, fs FileSystem) {
 	}
 	sort.Sort(byName(files))
 
-	log.Printf("reading %d files", len(files))
-
 	for _, file := range files {
-		log.Printf("file: %q", file.Name())
 		if file.Name()[0] == '.' {
 			continue
 		}
@@ -1226,7 +1203,6 @@ func (s byName) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 // name is '/'-separated, not filepath.Separator.
 func serveFile(w ResponseWriter, r *Request, fs FileSystem, name string) {
-	log.Printf("serveFile: ...")
 	const gophermapFile = "/gophermap"
 
 	f, err := fs.Open(name)
@@ -1263,7 +1239,6 @@ func serveFile(w ResponseWriter, r *Request, fs FileSystem, name string) {
 		return
 	}
 
-	log.Printf("serving file: %s", d.Name())
 	serveContent(w, r, f)
 }
 
