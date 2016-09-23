@@ -197,7 +197,11 @@ func (i *Item) parse(line []byte) error {
 
 	port, err := strconv.Atoi(string(parts[3]))
 	if err != nil {
-		return err
+		// Ignore parsing errors for bad servers for INFO types
+		if i.Type != INFO {
+			return err
+		}
+		port = 0
 	}
 	i.Port = port
 
@@ -379,7 +383,8 @@ func (i *Item) FetchDirectory() (Directory, error) {
 		var i Item
 		err := i.parse(line)
 		if err != nil {
-			return d, err
+			log.Printf("Error parsing %q: %q", line, err)
+			continue
 		}
 		d = append(d, i)
 	}
