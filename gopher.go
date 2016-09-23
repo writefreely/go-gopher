@@ -604,7 +604,6 @@ type conn struct {
 
 // Create new connection from rwc.
 func (s *Server) newConn(rwc net.Conn) *conn {
-	s.logf("accepted new connection")
 	c := &conn{
 		server: s,
 		rwc:    rwc,
@@ -614,7 +613,6 @@ func (s *Server) newConn(rwc net.Conn) *conn {
 
 func (c *conn) serve(ctx context.Context) {
 	c.remoteAddr = c.rwc.RemoteAddr().String()
-	c.server.logf("serving %s", c.remoteAddr)
 
 	w, err := c.readRequest(ctx)
 
@@ -856,7 +854,6 @@ func (mux *ServeMux) handler(selector string) (h Handler, pattern string) {
 // ServeGopher dispatches the request to the handler whose
 // pattern most closely matches the request URL.
 func (mux *ServeMux) ServeGopher(w ResponseWriter, r *Request) {
-	w.Server().logf("calling ServeGopher:")
 	h, _ := mux.Handler(r)
 	h.ServeGopher(w, r)
 }
@@ -1075,7 +1072,6 @@ func FileServer(root FileSystem) Handler {
 }
 
 func (f *fileHandler) ServeGopher(w ResponseWriter, r *Request) {
-	w.Server().logf("fileHandler.ServeGopher: %s", r.Selector)
 	upath := r.Selector
 	if !strings.HasPrefix(upath, "/") {
 		upath = "/" + upath
