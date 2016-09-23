@@ -21,6 +21,15 @@ func index(w gopher.ResponseWriter, r *gopher.Request) {
 			Description: "foo",
 		},
 	)
+	w.WriteItem(
+		gopher.Item{
+			Type:        gopher.DIRECTORY,
+			Selector:    "/",
+			Description: "Floodgap",
+			Host:        "gopher.floodgap.com",
+			Port:        70,
+		},
+	)
 }
 
 func hello(w gopher.ResponseWriter, r *gopher.Request) {
