@@ -54,6 +54,7 @@ const (
 	HTML  = ItemType('h') // Item is a HTML document
 	AUDIO = ItemType('s') // Item is an Audio file
 	PNG   = ItemType('p') // Item is a PNG Image
+	DOC   = ItemType('d') // Item is a Document
 )
 
 const (
@@ -140,6 +141,8 @@ func (it ItemType) String() string {
 		return "SND"
 	case PNG:
 		return "PNG"
+	case DOC:
+		return "DOC"
 	default:
 		return "???"
 	}
