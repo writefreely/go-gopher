@@ -16,7 +16,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -180,11 +179,8 @@ func (i Item) MarshalText() ([]byte, error) {
 	return b, nil
 }
 
-func (i *Item) parse(line []byte) error {
-	parts := bytes.Split(bytes.Trim(line, "\r\n"), []byte{'\t'})
-	if len(parts) < 4 {
-		return errors.New("truncated item line: " + string(line))
-	}
+func (i *Item) parse(line string) error {
+	parts := strings.Split(line, "\t")
 
 	if len(parts[0]) < 1 {
 		return errors.New("no item type: " + string(line))
@@ -192,18 +188,32 @@ func (i *Item) parse(line []byte) error {
 
 	i.Type = ItemType(parts[0][0])
 	i.Description = string(parts[0][1:])
-	i.Selector = string(parts[1])
-	i.Host = string(parts[2])
 
-	port, err := strconv.Atoi(string(parts[3]))
-	if err != nil {
-		// Ignore parsing errors for bad servers for INFO types
-		if i.Type != INFO {
-			return err
-		}
-		port = 0
+	if len(parts) > 1 {
+		i.Selector = string(parts[1])
+	} else {
+		i.Selector = ""
 	}
-	i.Port = port
+
+	if len(parts) > 2 {
+		i.Host = string(parts[2])
+	} else {
+		i.Host = "null.host"
+	}
+
+	if len(parts) > 3 {
+		port, err := strconv.Atoi(string(parts[3]))
+		if err != nil {
+			// Ignore parsing errors for bad servers for INFO types
+			if i.Type != INFO {
+				return err
+			}
+			i.Port = 0
+		}
+		i.Port = port
+	} else {
+		i.Port = 0
+	}
 
 	if len(parts) >= 4 {
 		for _, v := range parts[4:] {
@@ -363,16 +373,16 @@ func (i *Item) FetchDirectory() (Directory, error) {
 		return nil, err
 	}
 
-	data, err := ioutil.ReadAll(conn)
-	if err != nil {
-		return nil, err
-	}
-
-	lines := bytes.Split(data, []byte(CRLF))
-
 	var d Directory
-	for _, line := range lines {
-		if len(bytes.Trim(line, "\r\n")) == 0 {
+
+	reader := bufio.NewReader(conn)
+	scanner := bufio.NewScanner(reader)
+	scanner.Split(bufio.ScanLines)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if len(line) == 0 {
 			continue
 		}
 
