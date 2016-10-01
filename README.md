@@ -7,8 +7,10 @@ implementing the RFC 1436 specification. The library includes both client and
 server handling and examples of each.
 
 ## Installation
-  
-  $ go get github.com/prologic/go-gopher
+
+```#!bash
+$ go get github.com/prologic/go-gopher
+```
 
 ## Usage
 
@@ -56,6 +58,18 @@ func main() {
 	log.Fatal(gopher.ListenAndServe("localhost:70", nil))
 }
 ```
+
+## Related
+
+Related projects:
+
+- [gopherproxy](https://github.com/prologic/gopherproxy)
+  gopherproxy is Gopher to HTTP proxy that uses go-gopher
+  for all of its core functionality.
+
+- [gopherclient](https://github.com/prologic/gopherclient)
+  gopherclient is a cross-platform QT/QML GUI Gopher Client
+  using the gopherproxy library as its backend.
 
 ## License
 
