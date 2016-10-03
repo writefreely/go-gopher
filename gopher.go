@@ -10,7 +10,6 @@ package gopher
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -27,6 +26,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"golang.org/x/net/context"
 )
 
 // Item Types
