@@ -10,6 +10,7 @@ package gopher
 import (
 	"bufio"
 	"bytes"
+	"crypto/rand"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
@@ -571,6 +572,41 @@ func (s Server) ListenAndServe() error {
 	return s.Serve(ln)
 }
 
+// ListenAndServeTLS listens on the TCP network address srv.Addr and
+// then calls Serve to handle requests on incoming TLS connections.
+// Accepted connections are configured to enable TCP keep-alives.
+//
+// Filenames containing a certificate and matching private key for the
+// server must be provided if neither the Server's TLSConfig.Certificates
+// nor TLSConfig.GetCertificate are populated. If the certificate is
+// signed by a certificate authority, the certFile should be the
+// concatenation of the server's certificate, any intermediates, and
+// the CA's certificate.
+//
+// If srv.Addr is blank, ":gophers" is used (port 73).
+//
+// ListenAndServeTLS always returns a non-nil error.
+func (s *Server) ListenAndServeTLS(certFile, keyFile string) error {
+	addr := s.Addr
+	if addr == "" {
+		addr = ":73"
+	}
+
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		log.Fatalf("server: loadkeys: %s", err)
+	}
+	config := tls.Config{Certificates: []tls.Certificate{cert}}
+	config.Rand = rand.Reader
+
+	ln, err := tls.Listen("tcp", addr, &config)
+	if err != nil {
+		log.Fatalf("server: listen: %s", err)
+	}
+
+	return s.Serve(ln)
+}
+
 // Serve ...
 func (s Server) Serve(l net.Listener) error {
 	defer l.Close()
@@ -582,6 +618,7 @@ func (s Server) Serve(l net.Listener) error {
 	for {
 		rw, err := l.Accept()
 		if err != nil {
+			fmt.Errorf("error acceptig new client: %s", err)
 			return err
 		}
 
@@ -743,6 +780,40 @@ func (s *Server) logf(format string, args ...interface{}) {
 func ListenAndServe(addr string, handler Handler) error {
 	server := &Server{Addr: addr, Handler: handler}
 	return server.ListenAndServe()
+}
+
+// ListenAndServeTLS acts identically to ListenAndServe, except that it
+// expects TLS connections. Additionally, files containing a certificate and
+// matching private key for the server must be provided. If the certificate
+// is signed by a certificate authority, the certFile should be the
+// concatenation of the server's certificate, any intermediates,
+// and the CA's certificate.
+//
+// A trivial example server is:
+//
+//    import (
+//        "log"
+//
+//        "github.com/prologic/go-gopher",
+//    )
+//
+//    func HelloServer(w gopher.ResponseWriter, req *gopher.Request) {
+//        w.WriteInfo("hello, world!")
+//    }
+//
+//    func main() {
+//        gopher.HandleFunc("/", handler)
+//        log.Printf("About to listen on 73. Go to gophers://127.0.0.1:73/")
+//        err := gopher.ListenAndServeTLS(":73", "cert.pem", "key.pem", nil)
+//        log.Fatal(err)
+//    }
+//
+// One can use generate_cert.go in crypto/tls to generate cert.pem and key.pem.
+//
+// ListenAndServeTLS always returns a non-nil error.
+func ListenAndServeTLS(addr, certFile, keyFile string, handler Handler) error {
+	server := &Server{Addr: addr, Handler: handler}
+	return server.ListenAndServeTLS(certFile, keyFile)
 }
 
 // ServeMux is a Gopher request multiplexer.
