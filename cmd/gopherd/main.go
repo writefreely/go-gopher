@@ -19,6 +19,7 @@ func cwd() string {
 func main() {
 	var (
 		bind = flag.String("bind", ":70", "port to listen on")
+		host = flag.String("host", "localhost", "fqdn hostname")
 		root = flag.String("root", cwd(), "root directory to serve")
 	)
 
@@ -26,5 +27,6 @@ func main() {
 
 	gopher.Handle("/", gopher.FileServer(gopher.Dir(*root)))
 
-	log.Fatal(gopher.ListenAndServe(*bind, nil))
+	server := gopher.Server{Addr: *bind, Hostname: *host}
+	log.Fatal(server.ListenAndServe())
 }

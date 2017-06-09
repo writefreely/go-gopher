@@ -531,6 +531,8 @@ type Server struct {
 	Addr    string  // TCP address to listen on, ":gopher" if empty
 	Handler Handler // handler to invoke, gopher.DefaultServeMux if nil
 
+	Hostname string // FQDN Hostname to reach this server on
+
 	// ErrorLog specifies an optional logger for errors accepting
 	// connections and unexpected behavior from handlers.
 	// If nil, logging goes to os.Stderr via the log package's
@@ -558,7 +560,7 @@ func (sh serverHandler) ServeGopher(rw ResponseWriter, req *Request) {
 //
 // If the address is not a FQDN, LocalHost as passed to the Handler
 // may not be accessible to clients, so links may not work.
-func (s Server) ListenAndServe() error {
+func (s *Server) ListenAndServe() error {
 	addr := s.Addr
 	if addr == "" {
 		addr = ":70"
@@ -608,7 +610,7 @@ func (s *Server) ListenAndServeTLS(certFile, keyFile string) error {
 }
 
 // Serve ...
-func (s Server) Serve(l net.Listener) error {
+func (s *Server) Serve(l net.Listener) error {
 	defer l.Close()
 
 	ctx := context.Background()
@@ -731,8 +733,15 @@ func (c *conn) readRequest(ctx context.Context) (w *response, err error) {
 		return nil, err
 	}
 
-	req.LocalHost = host
-	req.LocalPort = int(n)
+	server := ctx.Value(ServerContextKey).(*Server)
+	if server.Hostname == "" {
+		req.LocalHost = host
+		req.LocalPort = int(n)
+	} else {
+		req.LocalHost = server.Hostname
+		// TODO: Parse this from -bind option
+		req.LocalPort = int(n)
+	}
 
 	w = &response{
 		conn: c,
