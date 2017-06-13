@@ -309,6 +309,9 @@ func Get(uri string) (*Response, error) {
 	if len(path) > 2 {
 		Type = ItemType(path[0])
 		Selector = path[1:]
+		if u.RawQuery != "" {
+			Selector += "\t" + u.RawQuery
+		}
 	} else if len(path) == 1 {
 		Type = ItemType(path[0])
 		Selector = ""
