@@ -385,7 +385,7 @@ func (i *Item) FetchDirectory() (Directory, error) {
 	scanner.Split(bufio.ScanLines)
 
 	for scanner.Scan() {
-		line := scanner.Text()
+		line := strings.Trim(scanner.Text(), "\r\n")
 
 		if len(line) == 0 {
 			continue
