@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/prologic/go-gopher.svg)](https://travis-ci.org/prologic/go-gopher)
 [![CodeCov](https://codecov.io/gh/prologic/go-gopher/branch/master/graph/badge.svg)](https://codecov.io/gh/prologic/go-gopher)
+[![Go Report Card](https://goreportcard.com/badge/prologic/go-gopher)](https://goreportcard.com/report/prologic/go-gopher)
 [![GoDoc](https://godoc.org/github.com/prologic/go-gopher?status.svg)](https://godoc.org/github.com/prologic/go-gopher) 
 
 
