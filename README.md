@@ -12,18 +12,13 @@ server handling and examples of each.
 ## Installation
 
 ```#!bash
-$ go get github.com/prologic/go-gopher/...
+$ go get github.com/prologic/go-gopher
 ```
 
 ## Usage
 
 ```#!go
 import "github.com/prologic/go-gopher"
-```
-
-Or run the builtin (*very simple*) server:
-```#!bash
-$ gopherd
 ```
 
 ## Example
