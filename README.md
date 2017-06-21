@@ -1,6 +1,8 @@
 # Gopher protocol library for Golang
 
 [![Build Status](https://travis-ci.org/prologic/go-gopher.svg)](https://travis-ci.org/prologic/go-gopher)
+[![GoDoc](https://godoc.org/github.com/prologic/go-gopher?status.svg)](https://godoc.org/github.com/prologic/go-gopher) 
+
 
 This is a standards compliant Gopher library for the Go programming language
 implementing the RFC 1436 specification. The library includes both client and
