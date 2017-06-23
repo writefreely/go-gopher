@@ -99,11 +99,6 @@ var (
 // ItemType represents the type of an item
 type ItemType byte
 
-// MarshalJSON returns a JSON mashaled byte array of an ItemType
-func (it ItemType) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("%q", string(byte(it)))), nil
-}
-
 // Return a human friendly represation of an ItemType
 func (it ItemType) String() string {
 	switch it {
@@ -152,14 +147,33 @@ func (it ItemType) String() string {
 
 // Item describes an entry in a directory listing.
 type Item struct {
-	Type        ItemType
-	Description string
-	Selector    string
-	Host        string
-	Port        int
+	Type        ItemType `json:"type"`
+	Description string   `json:"description"`
+	Selector    string   `json:"selector"`
+	Host        string   `json:"host"`
+	Port        int      `json:"port"`
 
 	// non-standard extensions (ignored by standard clients)
-	Extras []string
+	Extras []string `json:"extras"`
+}
+
+// MarshalJSON serializes an Item into a JSON structure
+func (i Item) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Type        string   `json:"type"`
+		Description string   `json:"description"`
+		Selector    string   `json:"selector"`
+		Host        string   `json:"host"`
+		Port        int      `json:"port"`
+		Extras      []string `json:"extras"`
+	}{
+		Type:        string(i.Type),
+		Description: i.Description,
+		Selector:    i.Selector,
+		Host:        i.Host,
+		Port:        i.Port,
+		Extras:      i.Extras,
+	})
 }
 
 // MarshalText serializes an Item into an array of bytes
@@ -241,7 +255,9 @@ func (i *Item) isDirectoryLike() bool {
 }
 
 // Directory representes a Gopher Menu of Items
-type Directory []Item
+type Directory struct {
+	Items []Item `json:"items"`
+}
 
 // ToJSON returns the Directory as JSON bytes
 func (d *Directory) ToJSON() ([]byte, error) {
@@ -252,7 +268,7 @@ func (d *Directory) ToJSON() ([]byte, error) {
 // ToText returns the Directory as UTF-8 encoded bytes
 func (d *Directory) ToText() ([]byte, error) {
 	var buffer bytes.Buffer
-	for _, i := range *d {
+	for _, i := range d.Items {
 		val, err := i.MarshalText()
 		if err != nil {
 			return nil, err
@@ -368,24 +384,24 @@ func (i *Item) FetchFile() (io.Reader, error) {
 // Calling this on an Item whose type is not DIRECTORY will return an error.
 func (i *Item) FetchDirectory() (Directory, error) {
 	if !i.isDirectoryLike() {
-		return nil, errors.New("cannot fetch a file as a directory")
+		return Directory{}, errors.New("cannot fetch a file as a directory")
 	}
 
 	conn, err := net.Dial("tcp", i.Host+":"+strconv.Itoa(i.Port))
 	if err != nil {
-		return nil, err
+		return Directory{}, err
 	}
 
 	_, err = conn.Write([]byte(i.Selector + CRLF))
 	if err != nil {
-		return nil, err
+		return Directory{}, err
 	}
-
-	var d Directory
 
 	reader := bufio.NewReader(conn)
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
+
+	var items []Item
 
 	for scanner.Scan() {
 		line := strings.Trim(scanner.Text(), "\r\n")
@@ -398,16 +414,16 @@ func (i *Item) FetchDirectory() (Directory, error) {
 			break
 		}
 
-		var i Item
-		err := i.parse(line)
+		item := Item{}
+		err := item.parse(line)
 		if err != nil {
 			log.Printf("Error parsing %q: %q", line, err)
 			continue
 		}
-		d = append(d, i)
+		items = append(items, item)
 	}
 
-	return d, nil
+	return Directory{items}, nil
 }
 
 // Request repsesnts an inbound request to a listening server.

@@ -43,13 +43,27 @@ func TestGet(t *testing.T) {
 
 	t.Logf("res: %s", string(b))
 
-	assert.Len(res.Dir, 1)
+	assert.Len(res.Dir.Items, 1)
 
-	assert.Equal(res.Dir[0].Type, gopher.INFO)
-	assert.Equal(res.Dir[0].Description, "Hello World!")
+	assert.Equal(res.Dir.Items[0].Type, gopher.INFO)
+	assert.Equal(res.Dir.Items[0].Description, "Hello World!")
+}
+
+func TestFileServer(t *testing.T) {
+	assert := assert.New(t)
+
+	res, err := gopher.Get("gopher://localhost:7000/")
+	assert.Nil(err)
+	assert.Len(res.Dir.Items, 5)
+
+	json, err := res.Dir.ToJSON()
+	assert.Nil(err)
+
+	assert.JSONEq(string(json), `{"items":[{"type":"0","description":"LICENSE","selector":"LICENSE","host":"127.0.0.1","port":7000,"extras":null},{"type":"0","description":"README.md","selector":"README.md","host":"127.0.0.1","port":7000,"extras":null},{"type":"1","description":"examples","selector":"examples","host":"127.0.0.1","port":7000,"extras":null},{"type":"0","description":"gopher.go","selector":"gopher.go","host":"127.0.0.1","port":7000,"extras":null},{"type":"0","description":"gopher_test.go","selector":"gopher_test.go","host":"127.0.0.1","port":7000,"extras":null}]}`)
 }
 
 func TestMain(m *testing.M) {
+	gopher.Handle("/", gopher.FileServer(gopher.Dir(".")))
 	gopher.HandleFunc("/hello", hello)
 	go func() {
 		log.Fatal(gopher.ListenAndServe("localhost:7000", nil))
