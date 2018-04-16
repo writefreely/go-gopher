@@ -8,34 +8,28 @@ import (
 )
 
 func index(w gopher.ResponseWriter, r *gopher.Request) {
-	w.WriteItem(
-		gopher.Item{
-			Type:        gopher.DIRECTORY,
-			Selector:    "/hello",
-			Description: "hello",
+	w.WriteItem(&gopher.Item{
+		Type:        gopher.DIRECTORY,
+		Selector:    "/hello",
+		Description: "hello",
 
-			// TLS Resource
-			Host:   "localhost",
-			Port:   73,
-			Extras: []string{"TLS"},
-		},
-	)
-	w.WriteItem(
-		gopher.Item{
-			Type:        gopher.FILE,
-			Selector:    "/foo",
-			Description: "foo",
-		},
-	)
-	w.WriteItem(
-		gopher.Item{
-			Type:        gopher.DIRECTORY,
-			Selector:    "/",
-			Description: "Floodgap",
-			Host:        "gopher.floodgap.com",
-			Port:        70,
-		},
-	)
+		// TLS Resource
+		Host:   "localhost",
+		Port:   73,
+		Extras: []string{"TLS"},
+	})
+	w.WriteItem(&gopher.Item{
+		Type:        gopher.FILE,
+		Selector:    "/foo",
+		Description: "foo",
+	})
+	w.WriteItem(&gopher.Item{
+		Type:        gopher.DIRECTORY,
+		Selector:    "/",
+		Description: "Floodgap",
+		Host:        "gopher.floodgap.com",
+		Port:        70,
+	})
 }
 
 func hello(w gopher.ResponseWriter, r *gopher.Request) {

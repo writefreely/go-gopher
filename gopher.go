@@ -157,8 +157,61 @@ type Item struct {
 	Extras []string `json:"extras"`
 }
 
+// ParseItem parses a line of text into an item
+func ParseItem(line string) (item *Item, err error) {
+	parts := strings.Split(strings.Trim(line, "\r\n"), "\t")
+
+	if len(parts[0]) < 1 {
+		return nil, errors.New("no item type: " + string(line))
+	}
+
+	item = &Item{
+		Type:        ItemType(parts[0][0]),
+		Description: string(parts[0][1:]),
+		Extras:      make([]string, 0),
+	}
+
+	// Selector
+	if len(parts) > 1 {
+		item.Selector = string(parts[1])
+	} else {
+		item.Selector = ""
+	}
+
+	// Host
+	if len(parts) > 2 {
+		item.Host = string(parts[2])
+	} else {
+		item.Host = "null.host"
+	}
+
+	// Port
+	if len(parts) > 3 {
+		port, err := strconv.Atoi(string(parts[3]))
+		if err != nil {
+			// Ignore parsing errors for bad servers for INFO types
+			if item.Type != INFO {
+				return nil, err
+			}
+			item.Port = 0
+		}
+		item.Port = port
+	} else {
+		item.Port = 0
+	}
+
+	// Extras
+	if len(parts) >= 4 {
+		for _, v := range parts[4:] {
+			item.Extras = append(item.Extras, string(v))
+		}
+	}
+
+	return
+}
+
 // MarshalJSON serializes an Item into a JSON structure
-func (i Item) MarshalJSON() ([]byte, error) {
+func (i *Item) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
 		Type        string   `json:"type"`
 		Description string   `json:"description"`
@@ -177,7 +230,7 @@ func (i Item) MarshalJSON() ([]byte, error) {
 }
 
 // MarshalText serializes an Item into an array of bytes
-func (i Item) MarshalText() ([]byte, error) {
+func (i *Item) MarshalText() ([]byte, error) {
 	b := []byte{}
 	b = append(b, byte(i.Type))
 	b = append(b, []byte(i.Description)...)
@@ -198,51 +251,6 @@ func (i Item) MarshalText() ([]byte, error) {
 	return b, nil
 }
 
-func (i *Item) parse(line string) error {
-	parts := strings.Split(line, "\t")
-
-	if len(parts[0]) < 1 {
-		return errors.New("no item type: " + string(line))
-	}
-
-	i.Type = ItemType(parts[0][0])
-	i.Description = string(parts[0][1:])
-
-	if len(parts) > 1 {
-		i.Selector = string(parts[1])
-	} else {
-		i.Selector = ""
-	}
-
-	if len(parts) > 2 {
-		i.Host = string(parts[2])
-	} else {
-		i.Host = "null.host"
-	}
-
-	if len(parts) > 3 {
-		port, err := strconv.Atoi(string(parts[3]))
-		if err != nil {
-			// Ignore parsing errors for bad servers for INFO types
-			if i.Type != INFO {
-				return err
-			}
-			i.Port = 0
-		}
-		i.Port = port
-	} else {
-		i.Port = 0
-	}
-
-	if len(parts) >= 4 {
-		for _, v := range parts[4:] {
-			i.Extras = append(i.Extras, string(v))
-		}
-	}
-
-	return nil
-}
-
 func (i *Item) isDirectoryLike() bool {
 	switch i.Type {
 	case DIRECTORY:
@@ -256,7 +264,7 @@ func (i *Item) isDirectoryLike() bool {
 
 // Directory representes a Gopher Menu of Items
 type Directory struct {
-	Items []Item `json:"items"`
+	Items []*Item `json:"items"`
 }
 
 // ToJSON returns the Directory as JSON bytes
@@ -401,7 +409,7 @@ func (i *Item) FetchDirectory() (Directory, error) {
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 
-	var items []Item
+	var items []*Item
 
 	for scanner.Scan() {
 		line := strings.Trim(scanner.Text(), "\r\n")
@@ -414,8 +422,7 @@ func (i *Item) FetchDirectory() (Directory, error) {
 			break
 		}
 
-		item := Item{}
-		err := item.parse(line)
+		item, err := ParseItem(line)
 		if err != nil {
 			log.Printf("Error parsing %q: %q", line, err)
 			continue
@@ -1032,7 +1039,7 @@ type ResponseWriter interface {
 	WriteInfo(msg string) error
 
 	// WriteItem writes an item
-	WriteItem(i Item) error
+	WriteItem(i *Item) error
 }
 
 // A response represents the server side of a Gopher response.
@@ -1072,7 +1079,7 @@ func (w *response) WriteError(err string) error {
 		return e
 	}
 
-	i := Item{
+	i := &Item{
 		Type:        ERROR,
 		Description: err,
 		Host:        "error.host",
@@ -1092,7 +1099,7 @@ func (w *response) WriteInfo(msg string) error {
 		return e
 	}
 
-	i := Item{
+	i := &Item{
 		Type:        INFO,
 		Description: msg,
 		Host:        "error.host",
@@ -1102,7 +1109,7 @@ func (w *response) WriteInfo(msg string) error {
 	return w.WriteItem(i)
 }
 
-func (w *response) WriteItem(i Item) error {
+func (w *response) WriteItem(i *Item) error {
 	if w.rt == 0 {
 		w.rt = 2
 	}
@@ -1275,15 +1282,13 @@ func dirList(w ResponseWriter, r *Request, f File, fs FileSystem) {
 				Error(w, "Error reading directory")
 				return
 			}
-			w.WriteItem(
-				Item{
-					Type:        DIRECTORY,
-					Description: file.Name(),
-					Selector:    pathname,
-					Host:        r.LocalHost,
-					Port:        r.LocalPort,
-				},
-			)
+			w.WriteItem(&Item{
+				Type:        DIRECTORY,
+				Description: file.Name(),
+				Selector:    pathname,
+				Host:        r.LocalHost,
+				Port:        r.LocalPort,
+			})
 		} else if file.Mode()&os.ModeType == 0 {
 			pathname, err := filepath.Rel(
 				root,
@@ -1296,15 +1301,13 @@ func dirList(w ResponseWriter, r *Request, f File, fs FileSystem) {
 
 			itemtype := GetItemType(path.Join(fullpath, file.Name()))
 
-			w.WriteItem(
-				Item{
-					Type:        itemtype,
-					Description: file.Name(),
-					Selector:    pathname,
-					Host:        r.LocalHost,
-					Port:        r.LocalPort,
-				},
-			)
+			w.WriteItem(&Item{
+				Type:        itemtype,
+				Description: file.Name(),
+				Selector:    pathname,
+				Host:        r.LocalHost,
+				Port:        r.LocalPort,
+			})
 		}
 	}
 }
