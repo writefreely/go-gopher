@@ -182,7 +182,7 @@ github.com/prologic/go-gopher/gopher.go:946.2,946.8 1 2
 github.com/prologic/go-gopher/gopher.go:936.26,937.34 1 4
 github.com/prologic/go-gopher/gopher.go:940.3,940.29 1 3
 github.com/prologic/go-gopher/gopher.go:937.34,938.12 1 1
-github.com/prologic/go-gopher/gopher.go:940.29,944.4 3 3
+github.com/prologic/go-gopher/gopher.go:940.29,944.4 3 2
 github.com/prologic/go-gopher/gopher.go:957.70,959.2 1 2
 github.com/prologic/go-gopher/gopher.go:962.75,967.14 4 2
 github.com/prologic/go-gopher/gopher.go:971.2,971.8 1 2
