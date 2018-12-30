@@ -1,10 +1,10 @@
 # Gopher protocol library for Golang
 
-[![Build Status](https://travis-ci.org/prologic/go-gopher.svg)](https://travis-ci.org/prologic/go-gopher)
+[![Build Status](https://cloud.drone.io/api/badges/prologic/go-gopher/status.svg)](https://cloud.drone.io/prologic/go-gopher)
 [![CodeCov](https://codecov.io/gh/prologic/go-gopher/branch/master/graph/badge.svg)](https://codecov.io/gh/prologic/go-gopher)
 [![Go Report Card](https://goreportcard.com/badge/prologic/go-gopher)](https://goreportcard.com/report/prologic/go-gopher)
 [![GoDoc](https://godoc.org/github.com/prologic/go-gopher?status.svg)](https://godoc.org/github.com/prologic/go-gopher) 
-
+[![Sourcegraph](https://sourcegraph.com/github.com/prologic/go-gopher/-/badge.svg)](https://sourcegraph.com/github.com/prologic/go-gopher?badge)
 
 This is a standards compliant Gopher library for the Go programming language
 implementing the RFC 1436 specification. The library includes both client and
