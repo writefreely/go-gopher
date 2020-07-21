@@ -646,8 +646,7 @@ func (s *Server) Serve(l net.Listener) error {
 	for {
 		rw, err := l.Accept()
 		if err != nil {
-			fmt.Errorf("error acceptig new client: %s", err)
-			return err
+			return fmt.Errorf("error accepting new client: %s", err)
 		}
 
 		c := s.newConn(rw)
