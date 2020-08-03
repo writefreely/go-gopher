@@ -37,7 +37,7 @@ import (
 
 func main() {
 	res, _ := gopher.Get("gopher://gopher.floodgap.com/")
-	bytes, _ = res.Dir.ToText()
+	bytes, _ := res.Dir.ToText()
 	fmt.Println(string(bytes))
 }
 ```
