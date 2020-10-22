@@ -293,7 +293,7 @@ func (d *Directory) ToText() ([]byte, error) {
 type Response struct {
 	Type ItemType
 	Dir  Directory
-	Body io.Reader
+	Body io.ReadCloser
 }
 
 // Get fetches a Gopher resource by URI
@@ -369,7 +369,7 @@ func Get(uri string) (*Response, error) {
 // FetchFile fetches data, not directory information.
 // Calling this on a DIRECTORY Item type
 // or unsupported type will return an error.
-func (i *Item) FetchFile() (io.Reader, error) {
+func (i *Item) FetchFile() (io.ReadCloser, error) {
 	if i.Type == DIRECTORY {
 		return nil, errors.New("cannot fetch a directory as a file")
 	}
