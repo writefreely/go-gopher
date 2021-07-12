@@ -4,7 +4,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/prologic/go-gopher"
+	"git.mills.io/prologic/go-gopher"
 )
 
 func index(w gopher.ResponseWriter, r *gopher.Request) {

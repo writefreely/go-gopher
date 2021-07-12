@@ -797,7 +797,7 @@ func (s *Server) logf(format string, args ...interface{}) {
 //        "io"
 //        "log"
 //
-//        "github.com/prologic/go-gopher"
+//        "git.mills.io/prologic/go-gopher"
 //    )
 //
 //    // hello world, the gopher server
@@ -828,7 +828,7 @@ func ListenAndServe(addr string, handler Handler) error {
 //    import (
 //        "log"
 //
-//        "github.com/prologic/go-gopher",
+//        "git.mills.io/prologic/go-gopher",
 //    )
 //
 //    func HelloServer(w gopher.ResponseWriter, req *gopher.Request) {

@@ -6,7 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/prologic/go-gopher"
+	"git.mills.io/prologic/go-gopher"
 )
 
 var (

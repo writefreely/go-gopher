@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/prologic/go-gopher"
+	"git.mills.io/prologic/go-gopher"
 )
 
 func cwd() string {
