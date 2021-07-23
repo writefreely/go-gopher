@@ -1,6 +1,10 @@
-*~*
+*~
 *.bak
 coverage.txt
-./hello
-./client
-./fileserver
+
+/hello
+/client
+/fileserver
+
+/examples/client/client
+/examples/hello/gencerts
