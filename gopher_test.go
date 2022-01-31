@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 			break
 		}
 		fmt.Printf("Server not ready, going to try again in a sec. %v", err)
-		time.Sleep(1 * time.Millisecond)
+		time.Sleep(1 * time.Second)
 	}
 	/////
 
