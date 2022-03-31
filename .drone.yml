@@ -20,7 +20,7 @@ steps:
 
 trigger:
   branch:
-    - main
+    - master
   event:
     - tag
     - push
