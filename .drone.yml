@@ -1,0 +1,27 @@
+---
+kind: pipeline
+name: default
+
+steps:
+  - name: build-and-test
+    image: r.mills.io/prologic/golang-alpine:latest
+    commands:
+      - go test
+
+  - name: notify-irc
+    image: plugins/webhook
+    settings:
+      urls:
+        - https://msgbus.mills.io/ci.mills.io
+    when:
+      status:
+        - success
+        - failure
+
+trigger:
+  branch:
+    - main
+  event:
+    - tag
+    - push
+    - pull_request

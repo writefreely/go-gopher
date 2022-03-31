@@ -3,17 +3,52 @@ package gopher_test
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"testing"
 	"time"
 
-	"git.mills.io/prologic/go-gopher"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
+	"git.mills.io/prologic/go-gopher"
 )
 
+var (
+	testHost string = "localhost"
+	testPort int
+)
+
+func pickUnusedPort() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:0")
+	if err != nil {
+		return 0, err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return 0, err
+	}
+	port := l.Addr().(*net.TCPAddr).Port
+	if err := l.Close(); err != nil {
+		return 0, err
+	}
+	return port, nil
+}
+
 func TestMain(m *testing.M) {
-	ch := startTestServer()
-	defer stopTestServer(ch)
+	port, err := pickUnusedPort()
+	if err != nil {
+		log.Fatalf("error finding a free port: %s", err)
+	}
+	testPort = port
+
+	go func() {
+		gopher.Handle("/", gopher.FileServer(gopher.Dir("./testdata")))
+		gopher.HandleFunc("/hello", hello)
+		log.Printf("Test server starting on :%d\n", testPort)
+		log.Fatal(gopher.ListenAndServe(fmt.Sprintf(":%d", testPort), nil))
+	}()
 
 	// Because it can take some time for the server to spin up
 	// the tests are inconsistent - they'll fail if the server isn't
@@ -22,15 +57,14 @@ func TestMain(m *testing.M) {
 	//
 	// It seems like there should be a better way to do this
 	for attempts := 3; attempts > 0; attempts-- {
-		_, err := gopher.Get("gopher://localhost:7000")
+		_, err := gopher.Get(fmt.Sprintf("gopher://%s:%d", testHost, testPort))
 		if err == nil {
-			fmt.Println("Server ready")
+			log.Println("Server ready")
 			break
 		}
-		fmt.Printf("Server not ready, going to try again in a sec. %v", err)
+		log.Printf("Server not ready, going to try again in a sec. %v\n", err)
 		time.Sleep(1 * time.Second)
 	}
-	/////
 
 	code := m.Run()
 	os.Exit(code)
@@ -38,32 +72,6 @@ func TestMain(m *testing.M) {
 
 func hello(w gopher.ResponseWriter, r *gopher.Request) {
 	w.WriteInfo("Hello World!")
-}
-
-func startTestServer() chan bool {
-	quit := make(chan bool)
-	go func() {
-		for {
-			select {
-			case <-quit:
-				return
-			default:
-				gopher.Handle("/", gopher.FileServer(gopher.Dir("./testdata")))
-				gopher.HandleFunc("/hello", hello)
-				log.Println("Test server starting on 7000")
-				err := gopher.ListenAndServe("localhost:7000", nil)
-				if err != nil {
-					log.Fatal(err)
-				}
-			}
-		}
-	}()
-
-	return quit
-}
-
-func stopTestServer(c chan bool) {
-	c <- true
 }
 
 func Example_client() {
@@ -86,27 +94,29 @@ func Example_fileserver() {
 
 func TestGet(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
-	res, err := gopher.Get("gopher://localhost:7000/1hello")
-	assert.NoError(err)
+	res, err := gopher.Get(fmt.Sprintf("gopher://%s:%d/1hello", testHost, testPort))
+	require.NoError(err)
 	assert.Len(res.Dir.Items, 1)
 	assert.Equal(res.Dir.Items[0].Type, gopher.INFO)
 	assert.Equal(res.Dir.Items[0].Description, "Hello World!")
 
 	out, err := res.Dir.ToText()
-	assert.NoError(err)
+	require.NoError(err)
 	assert.Equal(string(out), "iHello World!\t\terror.host\t1\r\n")
 }
 
 func TestFileServer(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
-	res, err := gopher.Get("gopher://localhost:7000/")
-	assert.NoError(err)
+	res, err := gopher.Get(fmt.Sprintf("gopher://%s:%d/", testHost, testPort))
+	require.NoError(err)
 	assert.Len(res.Dir.Items, 1)
 
 	json, err := res.Dir.ToJSON()
-	assert.Nil(err)
+	require.NoError(err)
 
 	log.Println(string(json))
 	assert.JSONEq(
@@ -124,9 +134,10 @@ func TestParseItemNull(t *testing.T) {
 
 func TestParseItem(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
 	item, err := gopher.ParseItem("0foo\t/foo\tlocalhost\t70\r\n")
-	assert.NoError(err)
+	require.NoError(err)
 	assert.NotNil(item)
 	assert.Equal(item, &gopher.Item{
 		Type:        gopher.FILE,
@@ -140,10 +151,11 @@ func TestParseItem(t *testing.T) {
 
 func TestParseItemMarshal(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
 	data := "0foo\t/foo\tlocalhost\t70\r\n"
 	item, err := gopher.ParseItem(data)
-	assert.NoError(err)
+	require.NoError(err)
 	assert.NotNil(item)
 	assert.Equal(item, &gopher.Item{
 		Type:        gopher.FILE,
@@ -161,10 +173,11 @@ func TestParseItemMarshal(t *testing.T) {
 
 func TestParseItemMarshalIdempotency(t *testing.T) {
 	assert := assert.New(t)
+	require := require.New(t)
 
 	data := "0"
 	item, err := gopher.ParseItem(data)
-	assert.NoError(err)
+	require.NoError(err)
 	assert.NotNil(item)
 
 	data1, err := item.MarshalText()

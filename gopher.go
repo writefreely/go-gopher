@@ -26,8 +26,8 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 
+	sync "github.com/sasha-s/go-deadlock"
 	"golang.org/x/net/context"
 )
 
@@ -437,7 +437,6 @@ func (i *Item) FetchDirectory() (Directory, error) {
 // LocalHost and LocalPort may be used by the Handler for local links.
 // These are specified in the call to ListenAndServe.
 type Request struct {
-	conn      net.Conn
 	Selector  string
 	LocalHost string
 	LocalPort int
@@ -672,10 +671,6 @@ type conn struct {
 	// This is the value of a Handler's (*Request).RemoteAddr.
 	remoteAddr string
 
-	// tlsState is the TLS connection state when using TLS.
-	// nil means not TLS.
-	tlsState *tls.ConnectionState
-
 	// mu guards hijackedv, use of bufr, (*response).closeNotifyCh.
 	mu sync.Mutex
 }
@@ -775,14 +770,6 @@ func (c *conn) readRequest(ctx context.Context) (w *response, err error) {
 	w.w = bufio.NewWriter(c.rwc)
 
 	return w, nil
-}
-
-func (s *Server) logf(format string, args ...interface{}) {
-	if s.ErrorLog != nil {
-		s.ErrorLog.Printf(format, args...)
-	} else {
-		log.Printf(format, args...)
-	}
 }
 
 // ListenAndServe listens on the TCP network address addr
@@ -909,23 +896,6 @@ func selectorMatch(pattern, selector string) bool {
 		return pattern == selector
 	}
 	return len(selector) >= n && selector[0:n] == pattern
-}
-
-// Return the canonical path for p, eliminating . and .. elements.
-func cleanPath(p string) string {
-	if p == "" {
-		return "/"
-	}
-	if p[0] != '/' {
-		p = "/" + p
-	}
-	np := path.Clean(p)
-	// path.Clean removes trailing slash except for root;
-	// put the trailing slash back if necessary.
-	if p[len(p)-1] == '/' && np != "/" {
-		np += "/"
-	}
-	return np
 }
 
 // Find a handler on a handler map given a path string
@@ -1342,7 +1312,6 @@ func serveFile(w ResponseWriter, r *Request, fs FileSystem, name string) {
 			defer ff.Close()
 			dd, err := ff.Stat()
 			if err == nil {
-				name = gophermap
 				d = dd
 				f = ff
 			}
