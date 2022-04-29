@@ -1,4 +1,4 @@
-module git.mills.io/prologic/go-gopher
+module github.com/writefreely/go-gopher
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

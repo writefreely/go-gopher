@@ -9,13 +9,13 @@ server handling and examples of each.
 ## Installation
 
 ```#!bash
-$ go get git.mills.io/prologic/go-gopher
+$ go get github.com/writefreely/go-gopher
 ```
 
 ## Usage
 
 ```#!go
-import "git.mills.io/prologic/go-gopher"
+import "github.com/writefreely/go-gopher"
 ```
 
 ## Example
@@ -28,7 +28,7 @@ package main
 import (
 	"fmt"
 
-	"git.mills.io/prologic/go-gopher"
+	"github.com/writefreely/go-gopher"
 )
 
 func main() {
@@ -46,7 +46,7 @@ package main
 import (
 	"log"
 
-	"git.mills.io/prologic/go-gopher"
+	"github.com/writefreely/go-gopher"
 )
 
 func hello(w gopher.ResponseWriter, r *gopher.Request) {

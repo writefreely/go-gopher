@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"git.mills.io/prologic/go-gopher"
+	"github.com/writefreely/go-gopher"
 )
 
 var (
