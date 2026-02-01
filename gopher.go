@@ -437,9 +437,10 @@ func (i *Item) FetchDirectory() (Directory, error) {
 // LocalHost and LocalPort may be used by the Handler for local links.
 // These are specified in the call to ListenAndServe.
 type Request struct {
-	Selector  string
-	LocalHost string
-	LocalPort int
+	Selector   string
+	LocalHost  string
+	LocalPort  int
+	RemoteAddr string
 }
 
 // A Handler responds to a Gopher request.
@@ -699,6 +700,8 @@ func (c *conn) serve(ctx context.Context) {
 		io.WriteString(c.rwc, "3\tbad request\terror.host\t0")
 		return
 	}
+
+	w.req.RemoteAddr = c.remoteAddr
 
 	serverHandler{c.server}.ServeGopher(w, w.req)
 	w.End()
